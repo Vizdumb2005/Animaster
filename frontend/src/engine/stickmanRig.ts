@@ -45,7 +45,7 @@ export const defaultPose: RigPose = {
   lowerLegRight: 90,
 }
 
-const lengths = {
+export const stickmanLengths = {
   torso: 82,
   upperArm: 36,
   lowerArm: 34,
@@ -71,20 +71,20 @@ export function mergePose(overrides?: Partial<RigPose>): RigPose {
 
 export function buildStickmanGeometry(root: Point, pose: RigPose): StickmanGeometry {
   const hip = root
-  const shoulder = endPoint(hip, lengths.torso, pose.torso)
-  const headCenter = endPoint(shoulder, lengths.headRadius + 10, pose.torso)
-  const elbowLeft = endPoint(shoulder, lengths.upperArm, pose.upperArmLeft)
-  const handLeft = endPoint(elbowLeft, lengths.lowerArm, pose.lowerArmLeft)
-  const elbowRight = endPoint(shoulder, lengths.upperArm, pose.upperArmRight)
-  const handRight = endPoint(elbowRight, lengths.lowerArm, pose.lowerArmRight)
-  const kneeLeft = endPoint(hip, lengths.upperLeg, pose.upperLegLeft)
-  const footLeft = endPoint(kneeLeft, lengths.lowerLeg, pose.lowerLegLeft)
-  const kneeRight = endPoint(hip, lengths.upperLeg, pose.upperLegRight)
-  const footRight = endPoint(kneeRight, lengths.lowerLeg, pose.lowerLegRight)
+  const shoulder = endPoint(hip, stickmanLengths.torso, pose.torso)
+  const headCenter = endPoint(shoulder, stickmanLengths.headRadius + 10, pose.torso)
+  const elbowLeft = endPoint(shoulder, stickmanLengths.upperArm, pose.upperArmLeft)
+  const handLeft = endPoint(elbowLeft, stickmanLengths.lowerArm, pose.lowerArmLeft)
+  const elbowRight = endPoint(shoulder, stickmanLengths.upperArm, pose.upperArmRight)
+  const handRight = endPoint(elbowRight, stickmanLengths.lowerArm, pose.lowerArmRight)
+  const kneeLeft = endPoint(hip, stickmanLengths.upperLeg, pose.upperLegLeft)
+  const footLeft = endPoint(kneeLeft, stickmanLengths.lowerLeg, pose.lowerLegLeft)
+  const kneeRight = endPoint(hip, stickmanLengths.upperLeg, pose.upperLegRight)
+  const footRight = endPoint(kneeRight, stickmanLengths.lowerLeg, pose.lowerLegRight)
 
   return {
     headCenter,
-    headRadius: lengths.headRadius,
+    headRadius: stickmanLengths.headRadius,
     hip,
     shoulder,
     elbowLeft,
@@ -96,4 +96,18 @@ export function buildStickmanGeometry(root: Point, pose: RigPose): StickmanGeome
     kneeRight,
     footRight,
   }
+}
+
+export function collectBones(geometry: StickmanGeometry): Array<{ start: Point; end: Point }> {
+  return [
+    { start: geometry.hip, end: geometry.shoulder },
+    { start: geometry.shoulder, end: geometry.elbowLeft },
+    { start: geometry.elbowLeft, end: geometry.handLeft },
+    { start: geometry.shoulder, end: geometry.elbowRight },
+    { start: geometry.elbowRight, end: geometry.handRight },
+    { start: geometry.hip, end: geometry.kneeLeft },
+    { start: geometry.kneeLeft, end: geometry.footLeft },
+    { start: geometry.hip, end: geometry.kneeRight },
+    { start: geometry.kneeRight, end: geometry.footRight },
+  ]
 }
