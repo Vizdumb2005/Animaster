@@ -1,0 +1,17 @@
+import type { SceneDocument } from '../../shared/types/scene'
+
+export const exampleScene: SceneDocument = {
+  duration: 20,
+  characters: [
+    { id: 'bob', type: 'stickman', x: 140, y: 360 },
+    { id: 'ava', type: 'stickman', x: 520, y: 360 },
+  ],
+  timeline: [
+    { character: 'bob', action: 'walk_right', start: 0, duration: 5 },
+    { character: 'bob', action: 'wave', start: 6, duration: 2 },
+    { character: 'ava', action: 'idle', start: 0, duration: 20 },
+    { character: 'ava', action: 'sit', start: 10, duration: 3 },
+  ],
+}
+
+export const exampleSceneText = JSON.stringify(exampleScene, null, 2)
