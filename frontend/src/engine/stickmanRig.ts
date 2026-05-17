@@ -1,4 +1,4 @@
-import type { BoneName, RigPose } from '../../../shared/types/scene'
+import type { BoneName, FacingDirection, RigPose } from '../../../shared/types/scene'
 import { orderedBones } from './tween'
 
 export interface Point {
@@ -19,6 +19,8 @@ export interface StickmanGeometry {
   footLeft: Point
   kneeRight: Point
   footRight: Point
+  // Extra helpers for IK / ground system
+  facing: FacingDirection
 }
 
 export const boneLabels: Record<BoneName, string> = {
@@ -69,18 +71,29 @@ export function mergePose(overrides?: Partial<RigPose>): RigPose {
   }, {} as RigPose)
 }
 
-export function buildStickmanGeometry(root: Point, pose: RigPose): StickmanGeometry {
+export function buildStickmanGeometry(
+  root: Point,
+  pose: RigPose,
+  facing: FacingDirection = 'right',
+): StickmanGeometry {
+  // Mirror angles when facing left
+  const flip = facing === 'left' ? -1 : 1
+
   const hip = root
   const shoulder = endPoint(hip, lengths.torso, pose.torso)
   const headCenter = endPoint(shoulder, lengths.headRadius + 10, pose.torso)
-  const elbowLeft = endPoint(shoulder, lengths.upperArm, pose.upperArmLeft)
-  const handLeft = endPoint(elbowLeft, lengths.lowerArm, pose.lowerArmLeft)
-  const elbowRight = endPoint(shoulder, lengths.upperArm, pose.upperArmRight)
-  const handRight = endPoint(elbowRight, lengths.lowerArm, pose.lowerArmRight)
-  const kneeLeft = endPoint(hip, lengths.upperLeg, pose.upperLegLeft)
-  const footLeft = endPoint(kneeLeft, lengths.lowerLeg, pose.lowerLegLeft)
-  const kneeRight = endPoint(hip, lengths.upperLeg, pose.upperLegRight)
-  const footRight = endPoint(kneeRight, lengths.lowerLeg, pose.lowerLegRight)
+
+  // Arms — mirror X component when facing left
+  const elbowLeft  = endPoint(shoulder, lengths.upperArm, pose.upperArmLeft * flip)
+  const handLeft   = endPoint(elbowLeft,  lengths.lowerArm, pose.lowerArmLeft * flip)
+  const elbowRight = endPoint(shoulder, lengths.upperArm, pose.upperArmRight * flip)
+  const handRight  = endPoint(elbowRight, lengths.lowerArm, pose.lowerArmRight * flip)
+
+  // Legs — mirror X component when facing left
+  const kneeLeft   = endPoint(hip, lengths.upperLeg, pose.upperLegLeft * flip)
+  const footLeft   = endPoint(kneeLeft,  lengths.lowerLeg, pose.lowerLegLeft * flip)
+  const kneeRight  = endPoint(hip, lengths.upperLeg, pose.upperLegRight * flip)
+  const footRight  = endPoint(kneeRight, lengths.lowerLeg, pose.lowerLegRight * flip)
 
   return {
     headCenter,
@@ -95,5 +108,11 @@ export function buildStickmanGeometry(root: Point, pose: RigPose): StickmanGeome
     footLeft,
     kneeRight,
     footRight,
+    facing,
   }
 }
+
+/**
+ * Get the bone lengths used in rig geometry (for IK solvers).
+ */
+export const rigLengths = { ...lengths }
